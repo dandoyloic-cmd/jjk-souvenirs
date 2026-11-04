@@ -1,0 +1,30 @@
+name: Découverte du site (temporaire)
+
+on:
+  push:
+    paths:
+      - 'scripts/discover.mjs'
+      - '.github/workflows/discover.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm init -y >/dev/null && npm install playwright@1.48.2
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/discover.mjs
+      - name: Enregistre les résultats dans le dépôt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git add raw
+          git commit -m "Données brutes de découverte" || echo "rien à enregistrer"
+          git push
