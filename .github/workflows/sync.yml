@@ -1,13 +1,6 @@
 name: Mise à jour des souvenirs depuis le wiki
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/**'
-      - '.github/workflows/sync.yml'
-  schedule:
-    - cron: '17 5 * * *'   # tous les jours
   workflow_dispatch:
 
 permissions:
