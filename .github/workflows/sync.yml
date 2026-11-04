@@ -1,0 +1,39 @@
+name: Mise à jour des souvenirs depuis le wiki
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - '.github/workflows/sync.yml'
+  schedule:
+    - cron: '17 5 * * *'   # tous les jours
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/fetch-wiki.mjs
+      - name: Construit les données de l'appli (si le script existe)
+        run: if [ -f scripts/build-data.mjs ]; then node scripts/build-data.mjs; fi
+      - name: Enregistre les changements
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet && echo "Aucun changement" && exit 0
+          git commit -m "Mise à jour automatique des données du wiki"
+          git pull --rebase origin main
+          git push
